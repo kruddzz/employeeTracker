@@ -34,7 +34,7 @@ function firstPrompt() {
         "Remove Employees",
         "Update Employee Role",
         "Add Role",
-        // "Remove Role",
+        "Remove Role",
         // "Update Employee Manager",
         "End"]
     })
@@ -157,8 +157,7 @@ function promptDepartment(departmentChoices) {
 function addEmployee() {
   // console.log("Inserting an employee")
 
-  var query =
-    `SELECT r.id, r.title, r.salary FROM role r`
+  var query =`SELECT r.id, r.title, r.salary FROM role r`
 
   connection.query(query, function (err, res) {
     if (err) throw err;
@@ -222,8 +221,7 @@ function promptInsert(roleChoices) {
 function removeEmployees() {
   // console.log("Deleting an employee");
 
-  var query =
-    `SELECT e.id, e.first_name, e.last_name FROM employee e`
+  var query = `SELECT e.id, e.first_name, e.last_name FROM employee e`
 
   connection.query(query, function (err, res) {
     if (err) throw err;
@@ -274,7 +272,7 @@ function updateEmployeeRole() {
 }
 
 function employeeArray() {
-  console.log("Updating an employee");
+  // console.log("Updating an employee");
 
   var query = `SELECT e.id, e.first_name, e.last_name, r.title, d.name AS department, r.salary, CONCAT(m.first_name, ' ', m.last_name) AS manager FROM employee e
   JOIN role r ON e.role_id = r.id
@@ -288,15 +286,15 @@ function employeeArray() {
       value: id, name: `${first_name} ${last_name}`      
     }));
 
-    console.table(res);
-    console.log("employeeArray To Update!\n")
+    // console.table(res);
+    // console.log("employeeArray To Update!\n")
 
     roleArray(employeeChoices);
   });
 }
 
 function roleArray(employeeChoices) {
-  console.log("Updating an role");
+  // console.log("Updating an role");
 
   var query =
     `SELECT r.id, r.title, r.salary 
@@ -310,8 +308,8 @@ function roleArray(employeeChoices) {
       value: id, title: `${title}`, salary: `${salary}`      
     }));
 
-    console.table(res);
-    console.log("roleArray to Update!\n")
+    // console.table(res);
+    // console.log("roleArray to Update!\n")
 
     promptEmployeeRole(employeeChoices, roleChoices);
   });
@@ -349,6 +347,118 @@ function promptEmployeeRole(employeeChoices, roleChoices) {
 
           firstPrompt();
         });
-      // console.log(query.sql);
     });
 }
+
+// 7.Add Role
+
+function addRole() {
+
+  var query =`SELECT d.id, d.name, r.salary AS budget FROM employee e
+    JOIN role r ON e.role_id = r.id
+    JOIN department d ON d.id = r.department_id 
+    GROUP BY d.id, d.name`
+
+  connection.query(query, function (err, res) {
+    if (err) throw err;
+
+    const departmentChoices = res.map(({ id, name }) => ({
+      value: id, name: `${id} ${name}`
+    }));
+
+    // console.table(res);
+    // console.log("Department array!");
+
+    promptAddRole(departmentChoices);
+  });
+}
+
+function promptAddRole(departmentChoices) {
+
+  inquirer
+    .prompt([
+      {
+        type: "input",
+        name: "roleTitle",
+        message: "Role title?"
+      },
+      {
+        type: "input",
+        name: "roleSalary",
+        message: "Role Salary"
+      },
+      {
+        type: "list",
+        name: "departmentId",
+        message: "Department?",
+        choices: departmentChoices
+      },
+    ])
+    .then(function (answer) {
+
+      var query = `INSERT INTO role SET ?`
+
+      connection.query(query, {
+        title: answer.roleTitle,
+        salary: answer.roleSalary,
+        department_id: answer.departmentId
+      },
+        function (err, res) {
+          if (err) throw err;
+
+          // console.table(res);
+          // console.log("Role Inserted!");
+
+          firstPrompt();
+        });
+
+    });
+}
+
+// // 8. Remove Role
+// function removeRole() {
+//   // console.log("Deleting an employee");
+
+//   var query = `SELECT e.id, e.first_name, e.last_name FROM employee e`
+
+//   connection.query(query, function (err, res) {
+//     if (err) throw err;
+
+//     const deleteChoices = res.map(({ id, first_name, last_name }) => ({
+//       value: id, name: `${id} ${first_name} ${last_name}`
+//     }));
+
+//     // console.table(res);
+//     // console.log("ArrayToDelete!\n");
+
+//     promptDelete(deleteChoices);
+//   });
+// }
+
+// // User chooses from the employee list, then employee is deleted
+
+// function promptDelete(deleteChoices) {
+
+//   inquirer
+//     .prompt([
+//       {
+//         type: "list",
+//         name: "employeeId",
+//         message: "Which employee do you want to remove?",
+//         choices: deleteChoices
+//       }
+//     ])
+//     .then(function (answer) {
+
+//       var query = `DELETE FROM employee WHERE ?`;
+//       connection.query(query, { id: answer.employeeId }, function (err, res) {
+//         if (err) throw err;
+
+//         // console.table(res);
+//         // console.log(res.affectedRows + "Deleted!\n");
+
+//         firstPrompt();
+//       });
+
+//     });
+// }
