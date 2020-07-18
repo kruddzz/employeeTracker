@@ -65,7 +65,7 @@ function firstPrompt() {
         //   removeRole();
         //   break;
 
-        // case "Update Employee MAnager":
+        // case "Update Employee Manager":
         //   updateEmployeeManager();
         //   break;
 
@@ -199,7 +199,6 @@ function promptInsert(roleChoices) {
       console.log(answer);
 
       var query = `INSERT INTO employee SET ?`
-      // when finished prompting, insert a new item into the db with that info
       connection.query(query,
         {
           first_name: answer.first_name,
@@ -215,6 +214,55 @@ function promptInsert(roleChoices) {
 
           firstPrompt();
         });
+
+    });
+}
+// 5.Remove Employees
+
+function removeEmployees() {
+  // console.log("Deleting an employee");
+
+  var query =
+    `SELECT e.id, e.first_name, e.last_name FROM employee e`
+
+  connection.query(query, function (err, res) {
+    if (err) throw err;
+
+    const deleteChoices = res.map(({ id, first_name, last_name }) => ({
+      value: id, name: `${id} ${first_name} ${last_name}`
+    }));
+
+    // console.table(res);
+    // console.log("ArrayToDelete!\n");
+
+    promptDelete(deleteChoices);
+  });
+}
+
+// User chooses from the employee list, then employee is deleted
+
+function promptDelete(deleteChoices) {
+
+  inquirer
+    .prompt([
+      {
+        type: "list",
+        name: "employeeId",
+        message: "Which employee do you want to remove?",
+        choices: deleteChoices
+      }
+    ])
+    .then(function (answer) {
+
+      var query = `DELETE FROM employee WHERE ?`;
+      connection.query(query, { id: answer.employeeId }, function (err, res) {
+        if (err) throw err;
+
+        // console.table(res);
+        // console.log(res.affectedRows + "Deleted!\n");
+
+        firstPrompt();
+      });
 
     });
 }
