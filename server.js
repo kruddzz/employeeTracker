@@ -1,24 +1,77 @@
-const express = require("express");
+const mysql = require("mysql");
+const inquirer = require("inquirer");
+require("console.table");
+// const sql = require("./sql");
 
-const PORT = process.env.PORT || 8080;
-
-const app = express();
-
-// Serve static content for the app from the "public" directory in the application directory.
-app.use(express.static("public"));
-
-// Parse request body as JSON
-// req.body recieve it values from these middleware functions req .body will be undefined with out these functions
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
-
-// Import routes and give the server access to them.
-// const apiRoutes = require("./controllers/booksController.js");
-// const htmlRoutes = require("./controllers/htmlController.js");
-
-// app.use(apiRoutes);
-// app.use(htmlRoutes);
-
-app.listen(PORT, function() {
-  console.log("App now listening at localhost:" + PORT);
+var connection = mysql.createConnection({
+  host: "localhost",
+  port: 3306,
+  user: "root",
+  password: "KandM#6120",
+  database: "team_DB"
 });
+
+// connect to the mysql server and sql database
+connection.connect(function (err) {
+  if (err) throw err;
+  // run the start function after the connection is made to prompt the user
+  firstPrompt();
+});
+
+// function which prompts the user for what action they should take
+function firstPrompt() {
+
+  inquirer
+    .prompt({
+      type: "list",
+      name: "task",
+      message: "Would you like to do?",
+      choices: [
+        "View Employees",
+        "View Employees by Department",
+        // "View Employees by Manager",
+        "Add Employee",
+        "Remove Employees",
+        "Update Employee Role",
+        "Add Role",
+        // "Remove Role",
+        // "Update Employee Manager",
+        "End"]
+    })
+    .then(function ({ task }) {
+      switch (task) {
+        case "View Employees":
+          viewEmployee();
+          break;
+        case "View Employees by Department":
+          viewEmployeeByDepartment();
+          break;
+        // case "View Employees by Manager":
+        //   viewEmployeeByManager();
+        //   break;
+        case "Add Employee":
+          addEmployee();
+          break;
+        case "Remove Employees":
+          removeEmployees();
+          break;
+        case "Update Employee Role":
+          updateEmployeeRole();
+          break;
+        case "Add Role":
+          addRole();
+          break;
+        // case "Remove Role":
+        //   removeRole();
+        //   break;
+
+        // case "Update Employee MAnager":
+        //   updateEmployeeManager();
+        //   break;
+
+        case "End":
+          connection.end();
+          break;
+      }
+    });
+}
